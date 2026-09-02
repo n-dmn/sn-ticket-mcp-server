@@ -1,6 +1,7 @@
 import { ValidationError, ServiceNowApiError, AuthError } from './errors.js';
 
 export interface ToolErrorResult {
+  [x: string]: unknown;
   content: { type: 'text'; text: string }[];
   isError: true;
 }
