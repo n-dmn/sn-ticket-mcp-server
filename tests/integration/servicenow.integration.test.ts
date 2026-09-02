@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { loadConfig } from '../../src/config.js';
 import { TokenManager } from '../../src/servicenow/auth.js';
 import { ServiceNowClient } from '../../src/servicenow/client.js';
@@ -7,9 +7,13 @@ import { TICKET_TYPES } from '../../src/ticket-types.js';
 const shouldRun = process.env.RUN_SN_INTEGRATION_TESTS === 'true';
 
 describe.skipIf(!shouldRun)('ServiceNow dev instance integration', () => {
-  const config = loadConfig();
-  const tokenManager = new TokenManager(config.serviceNow);
-  const client = new ServiceNowClient(config.serviceNow, tokenManager);
+  let client: ServiceNowClient;
+
+  beforeAll(() => {
+    const config = loadConfig();
+    const tokenManager = new TokenManager(config.serviceNow);
+    client = new ServiceNowClient(config.serviceNow, tokenManager);
+  });
 
   it('authenticates and queries each configured ticket-type table without error', async () => {
     for (const type of Object.values(TICKET_TYPES)) {
