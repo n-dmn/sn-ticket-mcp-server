@@ -6,6 +6,7 @@ import { registerSearchTicketsTool } from './tools/search-tickets.js';
 import { registerGetTicketTool } from './tools/get-ticket.js';
 import { registerCreateTicketTool } from './tools/create-ticket.js';
 import { registerUpdateTicketTool } from './tools/update-ticket.js';
+import { registerUploadAttachmentTool } from './tools/upload-attachment.js';
 
 export interface ServerDeps {
   client: ServiceNowClient;
@@ -20,6 +21,7 @@ export function buildServer(deps: ServerDeps): McpServer {
   registerGetTicketTool(server, deps);
   registerCreateTicketTool(server, deps);
   registerUpdateTicketTool(server, deps);
+  registerUploadAttachmentTool(server, deps);
 
   return server;
 }
