@@ -60,4 +60,15 @@ describe('ticket-type registry', () => {
   it('exposes the four expected registry entries directly', () => {
     expect(Object.keys(TICKET_TYPES).sort()).toEqual(['creq', 'inquiry', 'issue', 'service_request']);
   });
+
+  it('rejects a top-level OR in the extra query for a discriminated ticket type', () => {
+    const issue = getTicketType('issue');
+    expect(() => buildQuery(issue, 'ORactive=true')).toThrow(ValidationError);
+    expect(() => buildQuery(issue, 'active=true^ORcontact_type=issue')).toThrow(ValidationError);
+  });
+
+  it('allows a top-level OR in the extra query for a non-discriminated ticket type', () => {
+    const creq = getTicketType('creq');
+    expect(buildQuery(creq, 'priority=1^ORpriority=2')).toBe('priority=1^ORpriority=2');
+  });
 });

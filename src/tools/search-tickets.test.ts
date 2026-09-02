@@ -49,4 +49,26 @@ describe('sn-search-tickets tool', () => {
       await cleanup();
     }
   });
+
+  it('returns a validation_error when the query would bypass the discriminator scoping', async () => {
+    const query = vi.fn();
+    const { client, cleanup } = await createTestClient({
+      client: { query } as unknown as ServiceNowClient,
+      attachments: {} as unknown as AttachmentClient
+    });
+
+    try {
+      const result = await client.callTool({
+        name: 'sn-search-tickets',
+        arguments: { ticket_type: 'issue', query: 'active=true^ORcontact_type=inquiry' }
+      });
+
+      expect(result.isError).toBe(true);
+      const content = result.content as { type: string; text: string }[];
+      expect(content[0].text).toContain('validation_error');
+      expect(query).not.toHaveBeenCalled();
+    } finally {
+      await cleanup();
+    }
+  });
 });

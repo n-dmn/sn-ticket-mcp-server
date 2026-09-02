@@ -23,3 +23,12 @@ export class AuthError extends Error {
     this.name = 'AuthError';
   }
 }
+
+// ServiceNow's REST API error envelope: { error: { message, detail }, status }
+export function extractServiceNowMessage(body: unknown): string | undefined {
+  if (!body || typeof body !== 'object' || !('error' in body)) return undefined;
+  const err = (body as { error?: unknown }).error;
+  if (!err || typeof err !== 'object' || !('message' in err)) return undefined;
+  const message = (err as { message?: unknown }).message;
+  return typeof message === 'string' && message.length > 0 ? message : undefined;
+}

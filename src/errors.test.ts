@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ValidationError, ServiceNowApiError, AuthError } from './errors.js';
+import { ValidationError, ServiceNowApiError, AuthError, extractServiceNowMessage } from './errors.js';
 
 describe('error types', () => {
   it('ValidationError carries a message and the correct name', () => {
@@ -22,5 +22,15 @@ describe('error types', () => {
     expect(error).toBeInstanceOf(Error);
     expect(error.name).toBe('AuthError');
     expect(error.message).toBe('token refresh failed');
+  });
+
+  it('extractServiceNowMessage returns the nested error message when present', () => {
+    expect(extractServiceNowMessage({ error: { message: 'Not Found' } })).toBe('Not Found');
+  });
+
+  it('extractServiceNowMessage returns undefined when there is no error envelope', () => {
+    expect(extractServiceNowMessage({})).toBeUndefined();
+    expect(extractServiceNowMessage(null)).toBeUndefined();
+    expect(extractServiceNowMessage('not an object')).toBeUndefined();
   });
 });

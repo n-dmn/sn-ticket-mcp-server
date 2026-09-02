@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { AttachmentClient } from './attachments.js';
-import { ServiceNowApiError } from '../errors.js';
+import { ServiceNowApiError, ValidationError } from '../errors.js';
 import type { ServiceNowConfig } from '../config.js';
 import type { TokenManager } from './auth.js';
 
@@ -49,12 +49,20 @@ describe('AttachmentClient', () => {
     );
     const client = new AttachmentClient(config, fakeTokenManager(), fetchImpl);
 
-    const list = await client.list('change_request', 'rec1');
+    const list = await client.list('change_request', 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6');
 
     expect(list).toEqual([{ sysId: 'att1', fileName: 'log.txt', contentType: 'text/plain', sizeBytes: 3 }]);
     expect(fetchImpl.mock.calls[0][0]).toBe(
-      'https://dev12345.service-now.com/api/now/table/sys_attachment?sysparm_query=table_name%3Dchange_request%5Etable_sys_id%3Drec1'
+      'https://dev12345.service-now.com/api/now/table/sys_attachment?sysparm_query=table_name%3Dchange_request%5Etable_sys_id%3Da1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
     );
+  });
+
+  it('rejects a malformed record sys_id before building the query', async () => {
+    const fetchImpl = vi.fn();
+    const client = new AttachmentClient(config, fakeTokenManager(), fetchImpl);
+
+    await expect(client.list('change_request', 'x^ORactive=true')).rejects.toThrow(ValidationError);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it('fetches attachment metadata and binary content together', async () => {
@@ -88,6 +96,27 @@ describe('AttachmentClient', () => {
       .mockResolvedValueOnce({ ok: false, status: 500, text: async () => 'boom' } as unknown as Response);
     const client = new AttachmentClient(config, fakeTokenManager(), fetchImpl);
 
-    await expect(client.getContent('att1')).rejects.toThrow(ServiceNowApiError);
+    try {
+      await client.getContent('att1');
+      throw new Error('expected rejection');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ServiceNowApiError);
+      expect((error as ServiceNowApiError).message).toBe('ServiceNow attachment download failed with status 500');
+    }
+  });
+
+  it('surfaces the ServiceNow error message when listing fails', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ error: { message: 'Table not found' } }, false, 404));
+    const client = new AttachmentClient(config, fakeTokenManager(), fetchImpl);
+
+    try {
+      await client.list('a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6', 'b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a1');
+      throw new Error('expected rejection');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ServiceNowApiError);
+      expect((error as ServiceNowApiError).message).toBe(
+        'ServiceNow API request failed with status 404: Table not found'
+      );
+    }
   });
 });

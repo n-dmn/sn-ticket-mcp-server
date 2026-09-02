@@ -1,6 +1,8 @@
-import { ServiceNowApiError } from '../errors.js';
+import { ServiceNowApiError, ValidationError, extractServiceNowMessage } from '../errors.js';
 import type { ServiceNowConfig } from '../config.js';
 import type { TokenManager } from './auth.js';
+
+const SYS_ID_PATTERN = /^[0-9a-f]{32}$/i;
 
 export interface AttachmentMeta {
   sysId: string;
@@ -23,6 +25,14 @@ function toAttachmentMeta(raw: RawAttachmentRecord): AttachmentMeta {
     contentType: raw.content_type,
     sizeBytes: Number.parseInt(raw.size_bytes, 10)
   };
+}
+
+function safeJsonParse(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
 }
 
 export class AttachmentClient {
@@ -57,6 +67,10 @@ export class AttachmentClient {
   }
 
   async list(table: string, recordSysId: string): Promise<AttachmentMeta[]> {
+    if (!SYS_ID_PATTERN.test(recordSysId)) {
+      throw new ValidationError(`Invalid record sys_id: ${recordSysId}`);
+    }
+
     const token = await this.tokenManager.getAccessToken();
     const params = new URLSearchParams({ sysparm_query: `table_name=${table}^table_sys_id=${recordSysId}` });
 
@@ -86,11 +100,11 @@ export class AttachmentClient {
 
     if (!fileResponse.ok) {
       const text = await fileResponse.text();
-      throw new ServiceNowApiError(
-        `ServiceNow attachment download failed with status ${fileResponse.status}`,
-        fileResponse.status,
-        text
-      );
+      const snMessage = extractServiceNowMessage(safeJsonParse(text));
+      const message = snMessage
+        ? `ServiceNow attachment download failed with status ${fileResponse.status}: ${snMessage}`
+        : `ServiceNow attachment download failed with status ${fileResponse.status}`;
+      throw new ServiceNowApiError(message, fileResponse.status, text);
     }
 
     const arrayBuffer = await fileResponse.arrayBuffer();
@@ -101,7 +115,11 @@ export class AttachmentClient {
     const text = await response.text();
     const json = text ? JSON.parse(text) : {};
     if (!response.ok) {
-      throw new ServiceNowApiError(`ServiceNow API request failed with status ${response.status}`, response.status, json);
+      const snMessage = extractServiceNowMessage(json);
+      const message = snMessage
+        ? `ServiceNow API request failed with status ${response.status}: ${snMessage}`
+        : `ServiceNow API request failed with status ${response.status}`;
+      throw new ServiceNowApiError(message, response.status, json);
     }
     return json as { result: unknown };
   }

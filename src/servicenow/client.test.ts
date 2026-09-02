@@ -88,6 +88,20 @@ describe('ServiceNowClient', () => {
       expect(error).toBeInstanceOf(ServiceNowApiError);
       expect((error as ServiceNowApiError).status).toBe(404);
       expect((error as ServiceNowApiError).body).toEqual({ error: { message: 'Not Found' } });
+      expect((error as ServiceNowApiError).message).toBe('ServiceNow API request failed with status 404: Not Found');
+    }
+  });
+
+  it('falls back to a generic message when the response has no ServiceNow error envelope', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({}, false, 500));
+    const client = new ServiceNowClient(config, fakeTokenManager(), fetchImpl);
+
+    try {
+      await client.getRecord('change_request', 'missing');
+      throw new Error('expected rejection');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ServiceNowApiError);
+      expect((error as ServiceNowApiError).message).toBe('ServiceNow API request failed with status 500');
     }
   });
 });

@@ -93,6 +93,11 @@ export function buildQuery(type: TicketTypeDef, extraQuery?: string): string | u
     parts.push(`${type.discriminatorField}=${type.discriminatorValue}`);
   }
   if (extraQuery) {
+    if (type.discriminatorField && (extraQuery.startsWith('OR') || extraQuery.includes('^OR'))) {
+      throw new ValidationError(
+        `query must not start with or contain a top-level OR condition for ticket_type '${type.key}', since it would bypass the ${type.discriminatorField} scoping`
+      );
+    }
     parts.push(extraQuery);
   }
   return parts.length > 0 ? parts.join('^') : undefined;

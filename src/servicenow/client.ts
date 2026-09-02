@@ -1,4 +1,4 @@
-import { ServiceNowApiError } from '../errors.js';
+import { ServiceNowApiError, extractServiceNowMessage } from '../errors.js';
 import type { ServiceNowConfig } from '../config.js';
 import type { TokenManager } from './auth.js';
 
@@ -58,7 +58,11 @@ export class ServiceNowClient {
     const json = text ? JSON.parse(text) : {};
 
     if (!response.ok) {
-      throw new ServiceNowApiError(`ServiceNow API request failed with status ${response.status}`, response.status, json);
+      const snMessage = extractServiceNowMessage(json);
+      const message = snMessage
+        ? `ServiceNow API request failed with status ${response.status}: ${snMessage}`
+        : `ServiceNow API request failed with status ${response.status}`;
+      throw new ServiceNowApiError(message, response.status, json);
     }
 
     return json.result;
