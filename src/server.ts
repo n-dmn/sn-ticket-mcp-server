@@ -5,6 +5,7 @@ import { registerListTicketTypesTool } from './tools/list-ticket-types.js';
 import { registerSearchTicketsTool } from './tools/search-tickets.js';
 import { registerGetTicketTool } from './tools/get-ticket.js';
 import { registerCreateTicketTool } from './tools/create-ticket.js';
+import { registerUpdateTicketTool } from './tools/update-ticket.js';
 
 export interface ServerDeps {
   client: ServiceNowClient;
@@ -18,6 +19,7 @@ export function buildServer(deps: ServerDeps): McpServer {
   registerSearchTicketsTool(server, deps);
   registerGetTicketTool(server, deps);
   registerCreateTicketTool(server, deps);
+  registerUpdateTicketTool(server, deps);
 
   return server;
 }
