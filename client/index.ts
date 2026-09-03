@@ -7,6 +7,7 @@ import { createMCPClient } from '@ai-sdk/mcp';
 
 const MCP_SERVER_URL = process.env.MCP_SERVER_URL ?? 'http://localhost:3005/mcp';
 const OPEN_AI_BASE_URI = requireEnv('OPEN_AI_BASE_URI');
+const OPEN_AI_API_VERSION = requireEnv('OPEN_AI_API_VERSION');
 const OPENAI_API_KEY = requireEnv('OPENAI_API_KEY');
 const OPEN_AI_DEPLOYMENT_ID = requireEnv('OPEN_AI_DEPLOYMENT_ID');
 const REASONING_MODEL = (process.env.REASONING_MODEL ?? 'true') !== 'false';
@@ -28,7 +29,8 @@ function requireEnv(name: string): string {
 }
 
 const azure = createAzure({
-  baseURL: OPEN_AI_BASE_URI,
+  useDeploymentBasedUrls: true,
+  baseURL: `${OPEN_AI_BASE_URI}/v1/responses?api-version=${OPEN_AI_API_VERSION}`,
   apiKey: OPENAI_API_KEY,
   headers: {
     'Ocp-Apim-Subscription-Key': OPENAI_API_KEY

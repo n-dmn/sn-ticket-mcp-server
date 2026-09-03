@@ -119,8 +119,9 @@ Add these to `.env` in addition to the ServiceNow variables above:
 | Variable | Required | Description |
 |---|---|---|
 | `MCP_SERVER_URL` | No (default `http://localhost:3005/mcp`) | This server's MCP endpoint |
-| `OPEN_AI_BASE_URI` | Yes | Azure OpenAI Responses API base URL, e.g. `https://<resource>.openai.azure.com/openai/v1` |
-| `OPENAI_API_KEY` | Yes | Azure OpenAI API key |
+| `OPEN_AI_BASE_URI` | Yes | Base URL in front of the Responses API, e.g. an APIM gateway origin plus the Azure OpenAI resource path — the client appends `/v1/responses?api-version=...` itself |
+| `OPEN_AI_API_VERSION` | Yes | `api-version` query param appended to the Responses API URL |
+| `OPENAI_API_KEY` | Yes | Sent both as the Azure OpenAI API key and as the `Ocp-Apim-Subscription-Key` header (this deployment is fronted by APIM, which uses the same key) |
 | `OPEN_AI_DEPLOYMENT_ID` | Yes | Azure deployment name to use as the model |
 | `REASONING_MODEL` | No (default `true`) | Set to `false` if the deployment accepts `temperature` (reasoning models like o1/o3 reject it) |
 
