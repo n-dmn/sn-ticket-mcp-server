@@ -104,6 +104,37 @@ All tools except `sn-list-ticket-types` and `sn-get-attachment` take
 their first argument, resolved through the registry in
 `src/ticket-types.ts` to the underlying ServiceNow table.
 
+## Standalone chat client
+
+GitHub Copilot may be blocked from using MCP servers by an
+organization/enterprise policy — a governance setting, not something
+fixable from `.vscode/mcp.json`. `client/index.ts` sidesteps this by
+talking to this server directly: a small CLI chat loop built with the
+Vercel AI SDK (`ai`, `@ai-sdk/mcp`, `@ai-sdk/azure`) that wires the
+MCP server's tools into a `ToolLoopAgent` backed by an Azure OpenAI
+Responses API deployment.
+
+Add these to `.env` in addition to the ServiceNow variables above:
+
+| Variable | Required | Description |
+|---|---|---|
+| `MCP_SERVER_URL` | No (default `http://localhost:3005/mcp`) | This server's MCP endpoint |
+| `OPEN_AI_BASE_URI` | Yes | Azure OpenAI Responses API base URL, e.g. `https://<resource>.openai.azure.com/openai/v1` |
+| `OPENAI_API_KEY` | Yes | Azure OpenAI API key |
+| `OPEN_AI_DEPLOYMENT_ID` | Yes | Azure deployment name to use as the model |
+| `REASONING_MODEL` | No (default `true`) | Set to `false` if the deployment accepts `temperature` (reasoning models like o1/o3 reject it) |
+
+Run the server, then the client, in two terminals:
+
+```bash
+npm run dev    # terminal 1 — starts the MCP server
+npm run chat   # terminal 2 — starts the chat REPL
+```
+
+Type a request (e.g. "what ticket types are available?") and `exit`
+to quit. Each turn opens a fresh MCP client connection and closes it
+once the tool loop finishes.
+
 ## Project layout
 
 ```
