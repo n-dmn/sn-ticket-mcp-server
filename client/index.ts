@@ -75,11 +75,12 @@ async function main(): Promise<void> {
         const text = await runTurn(messages);
         console.log(`\n${text}\n`);
       } catch (error) {
-        console.error(
-          `\nRequest failed: ${
-            error instanceof Error ? error.message : String(error)
-          }\nIs the MCP server running at ${MCP_SERVER_URL}?\n`
-        );
+        console.error(`\nRequest failed against ${MCP_SERVER_URL}:`);
+        console.error(error);
+        if (error instanceof Error && error.cause) {
+          console.error('Caused by:', error.cause);
+        }
+        console.error(`Is the MCP server running at ${MCP_SERVER_URL}?\n`);
         messages.pop();
       }
     }

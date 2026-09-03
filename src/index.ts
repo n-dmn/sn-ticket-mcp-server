@@ -12,6 +12,13 @@ const attachments = new AttachmentClient(config.serviceNow, tokenManager);
 
 const app = createApp({ client, attachments });
 
+process.on('unhandledRejection', (reason) => {
+  console.error('[mcp] unhandled rejection:', reason);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[mcp] uncaught exception:', error);
+});
+
 app.listen(config.port, () => {
-  console.log(`sn-ticket-mcp-server listening on port ${config.port}`);
+  console.log(`sn-ticket-mcp-server listening on port ${config.port}, POST/GET/DELETE http://localhost:${config.port}/mcp`);
 });
