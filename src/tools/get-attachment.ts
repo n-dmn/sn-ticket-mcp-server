@@ -28,7 +28,7 @@ export function registerGetAttachmentTool(server: McpServer, deps: { attachments
           ]
         };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-get-attachment');
       }
     }
   );

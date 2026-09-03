@@ -24,7 +24,7 @@ export function registerUploadAttachmentTool(server: McpServer, deps: { attachme
         const meta = await deps.attachments.upload(type.table, sys_id, file_name, content_type, buffer);
         return { content: [{ type: 'text', text: JSON.stringify(meta) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-upload-attachment');
       }
     }
   );

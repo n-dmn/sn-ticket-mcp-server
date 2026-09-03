@@ -28,7 +28,7 @@ export function registerSearchTicketsTool(server: McpServer, deps: { client: Ser
         });
         return { content: [{ type: 'text', text: JSON.stringify(records) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-search-tickets');
       }
     }
   );

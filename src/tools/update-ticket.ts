@@ -21,7 +21,7 @@ export function registerUpdateTicketTool(server: McpServer, deps: { client: Serv
         const updated = await deps.client.updateRecord(type.table, sys_id, fields);
         return { content: [{ type: 'text', text: JSON.stringify(updated) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-update-ticket');
       }
     }
   );

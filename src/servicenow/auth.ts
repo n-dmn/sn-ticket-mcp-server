@@ -29,7 +29,8 @@ export class TokenManager {
           refresh_token: this.tokenSet.refreshToken
         });
         return this.tokenSet.accessToken;
-      } catch {
+      } catch (error) {
+        console.warn('[servicenow-auth] refresh_token grant failed, falling back to password grant:', error);
         this.tokenSet = undefined;
       }
     }
@@ -49,6 +50,10 @@ export class TokenManager {
       ...grantParams
     });
 
+    console.log(
+      `[servicenow-auth] requesting token grant_type=${grantParams.grant_type} url=${this.config.tokenUrl} client_id=${this.config.clientId}`
+    );
+
     const response = await this.fetchImpl(this.config.tokenUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -57,6 +62,7 @@ export class TokenManager {
 
     if (!response.ok) {
       const text = await response.text();
+      console.error(`[servicenow-auth] token request failed status=${response.status} body=${text}`);
       throw new AuthError(`ServiceNow token request failed with status ${response.status}: ${text}`);
     }
 
@@ -65,6 +71,8 @@ export class TokenManager {
       refresh_token: string;
       expires_in: number;
     };
+
+    console.log(`[servicenow-auth] token acquired grant_type=${grantParams.grant_type} expires_in=${json.expires_in}s`);
 
     return {
       accessToken: json.access_token,

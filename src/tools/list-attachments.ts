@@ -20,7 +20,7 @@ export function registerListAttachmentsTool(server: McpServer, deps: { attachmen
         const attachments = await deps.attachments.list(type.table, sys_id);
         return { content: [{ type: 'text', text: JSON.stringify(attachments) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-list-attachments');
       }
     }
   );

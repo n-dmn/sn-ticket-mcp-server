@@ -20,7 +20,7 @@ export function registerGetTicketTool(server: McpServer, deps: { client: Service
         const record = await deps.client.getRecord(type.table, sys_id);
         return { content: [{ type: 'text', text: JSON.stringify(record) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-get-ticket');
       }
     }
   );

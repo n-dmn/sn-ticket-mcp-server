@@ -6,7 +6,10 @@ export interface ToolErrorResult {
   isError: true;
 }
 
-export function toToolError(error: unknown): ToolErrorResult {
+export function toToolError(error: unknown, toolName?: string): ToolErrorResult {
+  const prefix = toolName ? `[tool:${toolName}]` : '[tool]';
+  console.error(`${prefix} failed:`, error);
+
   if (error instanceof ValidationError) {
     return { content: [{ type: 'text', text: `validation_error: ${error.message}` }], isError: true };
   }

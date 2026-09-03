@@ -38,7 +38,7 @@ export function registerCreateTicketTool(server: McpServer, deps: { client: Serv
 
         return { content: [{ type: 'text', text: JSON.stringify(created) }] };
       } catch (error) {
-        return toToolError(error);
+        return toToolError(error, 'sn-create-ticket');
       }
     }
   );

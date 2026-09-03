@@ -44,7 +44,10 @@ export class ServiceNowClient {
 
   private async request(method: string, path: string, body?: unknown): Promise<unknown> {
     const token = await this.tokenManager.getAccessToken();
-    const response = await this.fetchImpl(`${this.config.instanceUrl}${path}`, {
+    const url = `${this.config.instanceUrl}${path}`;
+    console.log(`[servicenow-client] ${method} ${url}`);
+
+    const response = await this.fetchImpl(url, {
       method,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -58,6 +61,7 @@ export class ServiceNowClient {
     const json = text ? JSON.parse(text) : {};
 
     if (!response.ok) {
+      console.error(`[servicenow-client] ${method} ${url} failed status=${response.status} body=${text}`);
       const snMessage = extractServiceNowMessage(json);
       const message = snMessage
         ? `ServiceNow API request failed with status ${response.status}: ${snMessage}`
@@ -65,6 +69,7 @@ export class ServiceNowClient {
       throw new ServiceNowApiError(message, response.status, json);
     }
 
+    console.log(`[servicenow-client] ${method} ${url} -> ${response.status}`);
     return json.result;
   }
 }

@@ -52,6 +52,7 @@ export class AttachmentClient {
     const token = await this.tokenManager.getAccessToken();
     const params = new URLSearchParams({ table_name: table, table_sys_id: recordSysId, file_name: fileName });
 
+    console.log(`[servicenow-attachments] POST /api/now/attachment/file table=${table} sys_id=${recordSysId} file=${fileName}`);
     const response = await this.fetchImpl(`${this.config.instanceUrl}/api/now/attachment/file?${params.toString()}`, {
       method: 'POST',
       headers: {
@@ -74,6 +75,7 @@ export class AttachmentClient {
     const token = await this.tokenManager.getAccessToken();
     const params = new URLSearchParams({ sysparm_query: `table_name=${table}^table_sys_id=${recordSysId}` });
 
+    console.log(`[servicenow-attachments] GET sys_attachment table=${table} sys_id=${recordSysId}`);
     const response = await this.fetchImpl(
       `${this.config.instanceUrl}/api/now/table/sys_attachment?${params.toString()}`,
       { method: 'GET', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }
@@ -86,6 +88,7 @@ export class AttachmentClient {
   async getContent(attachmentSysId: string): Promise<{ data: Buffer; contentType: string; fileName: string }> {
     const token = await this.tokenManager.getAccessToken();
 
+    console.log(`[servicenow-attachments] GET sys_attachment/${attachmentSysId}`);
     const metaResponse = await this.fetchImpl(
       `${this.config.instanceUrl}/api/now/table/sys_attachment/${attachmentSysId}`,
       { method: 'GET', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }
@@ -93,6 +96,7 @@ export class AttachmentClient {
     const metaJson = await this.parseJson(metaResponse);
     const meta = toAttachmentMeta(metaJson.result as RawAttachmentRecord);
 
+    console.log(`[servicenow-attachments] GET attachment/${attachmentSysId}/file`);
     const fileResponse = await this.fetchImpl(`${this.config.instanceUrl}/api/now/attachment/${attachmentSysId}/file`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${token}` }
@@ -100,6 +104,9 @@ export class AttachmentClient {
 
     if (!fileResponse.ok) {
       const text = await fileResponse.text();
+      console.error(
+        `[servicenow-attachments] attachment/${attachmentSysId}/file failed status=${fileResponse.status} body=${text}`
+      );
       const snMessage = extractServiceNowMessage(safeJsonParse(text));
       const message = snMessage
         ? `ServiceNow attachment download failed with status ${fileResponse.status}: ${snMessage}`
@@ -115,6 +122,7 @@ export class AttachmentClient {
     const text = await response.text();
     const json = text ? JSON.parse(text) : {};
     if (!response.ok) {
+      console.error(`[servicenow-attachments] request failed status=${response.status} body=${text}`);
       const snMessage = extractServiceNowMessage(json);
       const message = snMessage
         ? `ServiceNow API request failed with status ${response.status}: ${snMessage}`
