@@ -49,6 +49,7 @@ describe('TokenManager', () => {
     expect(body.get('client_secret')).toBe('client-secret');
     expect(body.get('username')).toBe('svc-account');
     expect(body.get('password')).toBe('svc-password');
+    expect(body.get('scope')).toBe('useraccount');
   });
 
   it('reuses a cached token that is not near expiry', async () => {

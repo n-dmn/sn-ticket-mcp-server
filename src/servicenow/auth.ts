@@ -47,6 +47,7 @@ export class TokenManager {
     const body = new URLSearchParams({
       client_id: this.config.clientId,
       client_secret: this.config.clientSecret,
+      scope: 'useraccount',
       ...grantParams
     });
 
