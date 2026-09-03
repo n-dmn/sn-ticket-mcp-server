@@ -5,9 +5,8 @@
 An MCP server (Node.js + TypeScript) that exposes ServiceNow ticket
 operations (search, get, create, update, attachments) as MCP tools. It
 is consumed by an existing agent ecosystem (and, later, Copilot) that
-provides the LLM/reasoning layer. This project is inspired by the
-architectural lessons of an existing ServiceNow MCP server
-(happy-platform-mcp) but shares no code with it.
+provides the LLM/reasoning layer. This is a standalone project,
+designed from first principles for this agent ecosystem's needs.
 
 ## Scope
 
@@ -60,12 +59,11 @@ ServiceNow instance (dev, then prod)
   API. It is the right tool for the future agent layer that will call
   this server, not for this project.
 - **Metadata-driven generic tools**, not one tool per ticket type and
-  not live schema introspection. This mirrors the reference repo's own
-  evolution: it started with 480+ auto-generated per-table tools,
-  found that unusable, and consolidated to a small generic set backed
-  by a metadata config. A later attempt at live dynamic schema
-  discovery was also abandoned as fragile. This project starts
-  directly from the lesson already paid for elsewhere.
+  not live schema introspection. A per-table tool generation approach
+  produces an unusably large tool surface as tables grow, and live
+  dynamic schema discovery is fragile against real ServiceNow
+  instances. A small generic tool set backed by a metadata config
+  avoids both problems from the outset.
 - **Transport is Streamable HTTP**, since the calling agent ecosystem
   and future Copilot integration connect remotely rather than spawning
   a local subprocess.
