@@ -29,7 +29,10 @@ function requireEnv(name: string): string {
 
 const azure = createAzure({
   baseURL: OPEN_AI_BASE_URI,
-  apiKey: OPENAI_API_KEY
+  apiKey: OPENAI_API_KEY,
+  headers: {
+    'Ocp-Apim-Subscription-Key': OPENAI_API_KEY
+  }
 });
 
 async function runTurn(messages: ModelMessage[]): Promise<string> {
